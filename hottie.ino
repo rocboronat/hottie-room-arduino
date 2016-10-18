@@ -12,25 +12,29 @@ TFT TFTscreen = TFT(cs, dc, rst);
 char sensorPrintout[4];
 
 const int sensorPin = A0;
+const int wantedTempPin = A1;
+const int securityPin = A5;
 const int relayPin = 3;
 
-const int desiredTemperature = 25;
+float desiredTemperature = 22.00;
 
 const int roomLabelLeftMargin = 50;
 const int roomLabelTopMargin = 0;
 const int wantedLabelLeftMargin = 30;
-const int wantedLabelTopMargin = 60;
-const int roomValueLeftMargin = 6;
+const int wantedLabelTopMargin = 70;
+const int roomValueLeftMargin = 22;
 const int roomValueTopMargin = 20;
-const int wantedValueLeftMargin = 6;
-const int wantedValueTopMargin = 80;
+const int wantedValueLeftMargin = 22;
+const int wantedValueTopMargin = 90;
 
 boolean coldTime = false;
 boolean relayIsOn = false;
+int securityIsOk = 0;
 
 void setup() {
   Serial.begin(9600);
 
+  pinMode(securityPin, INPUT);
   pinMode(relayPin, OUTPUT);
 
   TFTscreen.begin();
@@ -42,17 +46,24 @@ void setup() {
   TFTscreen.text("Wanted", wantedLabelLeftMargin, wantedLabelTopMargin);
 
   TFTscreen.setTextSize(5);
-  TFTscreen.text("25.00", wantedValueLeftMargin, wantedValueTopMargin);
 }
 
 void loop() {
-  char textToPrint[10] = "";
+  securityIsOk = analogRead(securityPin);
+  int wantedRead = analogRead(wantedTempPin);
+  desiredTemperature = mapFloat(wantedRead, 0, 1023, 18, 32);
+  Serial.println(desiredTemperature);
+
+  char roomTempToPrint[10] = "";
   float temperature = getAverageTemperature();
-  dtostrf(temperature, 1, 2, textToPrint);
+  dtostrf(temperature, 1, 1, roomTempToPrint);
+  updateTFTTemperature(roomTempToPrint);
 
-  updateTFTTemperature(textToPrint);
+  char wantedTempToPrint[10] = "";
+  dtostrf(desiredTemperature, 1, 1, wantedTempToPrint);
+  updateTFTWantedTemperature(wantedTempToPrint);
 
-  if (temperature < desiredTemperature && !coldTime) {
+  if (securityIsOk == 1023 && temperature < desiredTemperature && !coldTime) {
     turnOnRelay();
   } else {
     turnOffRelay();
@@ -69,6 +80,9 @@ float getAverageTemperature() {
   for (int x = 0; x < loops; x++) {
     total = total + getTemperature();
   }
+  if (relayIsOn) {
+    total -= 3.20 * loops;
+  }
   return total / loops;
 }
 
@@ -82,17 +96,26 @@ float getTemperature() {
   return temperature;
 }
 
-char lastPrintedText[10];
+char lastPrintedRoomText[10];
 void updateTFTTemperature(char text[10]) {
   TFTscreen.stroke(0, 0, 0);
-  TFTscreen.text(lastPrintedText, roomValueLeftMargin, roomValueTopMargin);
+  TFTscreen.text(lastPrintedRoomText, roomValueLeftMargin, roomValueTopMargin);
   TFTscreen.stroke(255, 255, 255);
   TFTscreen.text(text, roomValueLeftMargin, roomValueTopMargin);
-  strncpy(lastPrintedText, text, 10);
+  strncpy(lastPrintedRoomText, text, 10);
+}
+
+char lastPrintedWantedText[10];
+void updateTFTWantedTemperature(char text[10]) {
+  TFTscreen.stroke(0, 0, 0);
+  TFTscreen.text(lastPrintedWantedText, wantedValueLeftMargin, wantedValueTopMargin);
+  TFTscreen.stroke(255, 255, 255);
+  TFTscreen.text(text, wantedValueLeftMargin, wantedValueTopMargin);
+  strncpy(lastPrintedWantedText, text, 10);
 }
 
 void updateColdTimeValue() {
-  Serial.println(millis() % 60000);
+  //Serial.println(millis() % 60000);
   if (millis() % 60000 > 50000) {
     coldTime = true;
   } else {
@@ -109,4 +132,10 @@ void turnOffRelay() {
   digitalWrite(relayPin, LOW);
   relayIsOn = false;
 }
+
+
+float mapFloat(long x, long in_min, long in_max, long out_min, long out_max) {
+  return (float)(x - in_min) * (out_max - out_min) / (float)(in_max - in_min) + out_min;
+}
+
 
