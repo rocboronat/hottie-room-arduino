@@ -70,7 +70,7 @@ void loop() {
   dtostrf(desiredTemperature, 1, 1, wantedTempToPrint);
   updateTFTWantedTemperature(wantedTempToPrint);
 
-  if (securityIsOk == 1023 && temperature < desiredTemperature) {
+  if (securityIsOk > 1000 && temperature < desiredTemperature) {
     turnOnRelay();
   } else {
     turnOffRelay();
