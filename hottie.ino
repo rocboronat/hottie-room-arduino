@@ -50,20 +50,27 @@ void setup() {
 
 void loop() {
   securityIsOk = analogRead(securityPin);
+  Serial.print("Security sensor: ");
+  Serial.println(securityIsOk);
+  
   int wantedRead = analogRead(wantedTempPin);
   desiredTemperature = mapFloat(wantedRead, 0, 1023, 18, 32);
+  Serial.print("Desired temperature: ");
   Serial.println(desiredTemperature);
 
   char roomTempToPrint[10] = "";
   float temperature = getAverageTemperature();
+  Serial.print("Room temperature: ");
+  Serial.println(temperature);
+  
   dtostrf(temperature, 1, 1, roomTempToPrint);
-  updateTFTTemperature(roomTempToPrint);
+  updateTFTRoomTemperature(roomTempToPrint);
 
   char wantedTempToPrint[10] = "";
   dtostrf(desiredTemperature, 1, 1, wantedTempToPrint);
   updateTFTWantedTemperature(wantedTempToPrint);
 
-  if (securityIsOk == 1023 && temperature < desiredTemperature && !coldTime) {
+  if (securityIsOk == 1023 && temperature < desiredTemperature) {
     turnOnRelay();
   } else {
     turnOffRelay();
@@ -71,6 +78,7 @@ void loop() {
 
   updateColdTimeValue();
 
+  Serial.println("");
   delay(500);
 }
 
@@ -97,7 +105,7 @@ float getTemperature() {
 }
 
 char lastPrintedRoomText[10];
-void updateTFTTemperature(char text[10]) {
+void updateTFTRoomTemperature(char text[10]) {
   TFTscreen.stroke(0, 0, 0);
   TFTscreen.text(lastPrintedRoomText, roomValueLeftMargin, roomValueTopMargin);
   TFTscreen.stroke(255, 255, 255);
