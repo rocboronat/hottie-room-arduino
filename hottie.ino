@@ -52,7 +52,7 @@ void loop() {
   securityIsOk = analogRead(securityPin);
   Serial.print("Security sensor: ");
   Serial.println(securityIsOk);
-  
+
   int wantedRead = analogRead(wantedTempPin);
   desiredTemperature = mapFloat(wantedRead, 0, 1023, 18, 32);
   Serial.print("Desired temperature: ");
@@ -62,7 +62,7 @@ void loop() {
   float temperature = getAverageTemperature();
   Serial.print("Room temperature: ");
   Serial.println(temperature);
-  
+
   dtostrf(temperature, 1, 1, roomTempToPrint);
   updateTFTRoomTemperature(roomTempToPrint);
 
@@ -70,9 +70,11 @@ void loop() {
   dtostrf(desiredTemperature, 1, 1, wantedTempToPrint);
   updateTFTWantedTemperature(wantedTempToPrint);
 
-  if (securityIsOk > 1000 && temperature < desiredTemperature) {
+  if (securityIsOk < 1000) {
+    turnOffRelay();
+  } else if (!relayIsOn && temperature < desiredTemperature) {
     turnOnRelay();
-  } else {
+  } else if (relayIsOn && temperature > desiredTemperature + 0.5) {
     turnOffRelay();
   }
 
