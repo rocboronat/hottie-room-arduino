@@ -31,6 +31,7 @@ const int wantedValueTopMargin = 90;
 boolean coldTime = false;
 boolean relayIsOn = false;
 int securityIsOk = 0;
+float relayAberration;
 
 void setup() {
   Serial.begin(9600);
@@ -38,6 +39,8 @@ void setup() {
   pinMode(securityPin, INPUT);
   pinMode(relay1Pin, OUTPUT);
   pinMode(relay2Pin, OUTPUT);
+
+  checkRelayChangesInTemperature();
 
   TFTscreen.begin();
   TFTscreen.background(0, 0, 0);
@@ -87,13 +90,14 @@ void loop() {
 }
 
 float getAverageTemperature() {
-  int loops = 100;
+  int loops = 200;
   float total = 0;
   for (int x = 0; x < loops; x++) {
     total = total + getTemperature();
+    delay(1);
   }
   if (relayIsOn) {
-    total -= 2.00 * loops;
+    total -= relayAberration * loops;
   }
   return total / loops;
 }
@@ -147,6 +151,14 @@ void turnOffRelay() {
   relayIsOn = false;
 }
 
+void checkRelayChangesInTemperature() {
+  delay(200);
+  float temperatureWithoutRelays = getAverageTemperature();
+  turnOnRelay();
+  delay(200);
+  float temperatureWithRelays = getAverageTemperature();
+  relayAberration = temperatureWithRelays - temperatureWithoutRelays;
+}
 
 float mapFloat(long x, long in_min, long in_max, long out_min, long out_max) {
   return (float)(x - in_min) * (out_max - out_min) / (float)(in_max - in_min) + out_min;
