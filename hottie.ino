@@ -14,7 +14,8 @@ char sensorPrintout[4];
 const int sensorPin = A0;
 const int wantedTempPin = A1;
 const int securityPin = A5;
-const int relayPin = 3;
+const int relay1Pin = 3;
+const int relay2Pin = 2;
 
 float desiredTemperature = 22.00;
 
@@ -35,7 +36,8 @@ void setup() {
   Serial.begin(9600);
 
   pinMode(securityPin, INPUT);
-  pinMode(relayPin, OUTPUT);
+  pinMode(relay1Pin, OUTPUT);
+  pinMode(relay2Pin, OUTPUT);
 
   TFTscreen.begin();
   TFTscreen.background(0, 0, 0);
@@ -91,7 +93,7 @@ float getAverageTemperature() {
     total = total + getTemperature();
   }
   if (relayIsOn) {
-    total -= 3.20 * loops;
+    total -= 2.00 * loops;
   }
   return total / loops;
 }
@@ -134,12 +136,14 @@ void updateColdTimeValue() {
 }
 
 void turnOnRelay() {
-  digitalWrite(relayPin, HIGH);
+  digitalWrite(relay1Pin, HIGH);
+  digitalWrite(relay2Pin, HIGH);
   relayIsOn = true;
 }
 
 void turnOffRelay() {
-  digitalWrite(relayPin, LOW);
+  digitalWrite(relay1Pin, LOW);
+  digitalWrite(relay2Pin, LOW);
   relayIsOn = false;
 }
 
