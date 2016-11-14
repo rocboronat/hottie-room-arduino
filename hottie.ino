@@ -16,6 +16,7 @@ const int wantedTempPin = A1;
 const int securityPin = A5;
 const int relay1Pin = 3;
 const int relay2Pin = 2;
+const float temperatureThreshold = 0.8;
 
 float desiredTemperature = 22.00;
 
@@ -79,7 +80,7 @@ void loop() {
     turnOffRelay();
   } else if (!relayIsOn && temperature < desiredTemperature) {
     turnOnRelay();
-  } else if (relayIsOn && temperature > desiredTemperature + 0.5) {
+  } else if (relayIsOn && temperature > desiredTemperature + temperatureThreshold) {
     turnOffRelay();
   }
 
