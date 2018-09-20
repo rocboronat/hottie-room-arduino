@@ -1,6 +1,6 @@
 # hottie-room-arduino
 Warm your room with this Arduino program
 
-Your electric heater has been broken. You don't know what it happens, but it doesn't turn on. You can throw it to the sea or repair it. So... you choose the second option, get an Arduino board and some electronic components, install this software, and make your room warn again :·)
+Your electric heater has been broken. You don't why, but it doesn't respond to any button. It seems the board burnt or something bad like that. You can throw it to the sea or repair it. And, as you are a green person, you've chosen the second option: to get a new Arduino board, some electronic components, install this software, and warm your room again.
 
 ![The hacked heater](art/hacked-heater.png)
